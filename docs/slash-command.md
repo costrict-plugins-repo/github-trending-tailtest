@@ -1,0 +1,106 @@
+# Commands
+
+tailtest adds two slash commands to Claude:
+
+| Command | What it does |
+|---|---|
+| `/tailtest <file>` | Generate or update tests for any file on demand |
+| `/summary` | Show what tailtest did this session |
+
+---
+
+## /summary -- session summary
+
+Type `/summary` at any point in a session to see what tailtest has done.
+
+```
+tailtest session summary
+Runner: python/pytest  Depth: standard
+
+3 file(s) covered:
+  src/billing.py    →  tests/test_billing.py    passed
+  src/invoice.py    →  tests/test_billing.py    fixed (1 attempt)
+  legacy/parser.py  →  (no test)                deferred
+
+1 fixed, 1 deferred, 0 unresolved.
+```
+
+The summary reads from `.tailtest/session.json`. It shows:
+- Which files Claude touched that had tests generated
+- Where the test file was written
+- Whether tests passed, needed fixing, were deferred, or are still unresolved
+- Which runner and depth are active
+
+**Status meanings:**
+- `passed` -- tests generated and all passed on the first run
+- `fixed (N attempt(s))` -- tests failed but Claude fixed them
+- `deferred` -- you told Claude to skip fixing this one
+- `unresolved` -- Claude tried 3 times and could not fix it; manual review needed
+
+The summary is on demand only. tailtest never emits it automatically.
+
+You can also ask in plain language: "what did you test?" or "tailtest summary" -- Claude understands both.
+
+---
+
+## `tailtest off` and `tailtest on`
+
+Pause or resume tailtest for the current session.
+
+**`tailtest off`** stops tailtest from running on file edits. Changes you make while paused are not tested. Useful when iterating quickly on something you know is incomplete.
+
+**`tailtest on`** resumes normal behaviour.
+
+The pause state is not persisted across sessions -- tailtest always starts active.
+
+Type the command in the chat exactly as shown. Claude understands natural variants too: "pause tailtest", "resume tailtest", "disable tailtest".
+
+**Example:**
+```
+> tailtest off
+tailtest paused. Type /tailtest on to resume.
+
+> tailtest on
+tailtest resumed.
+```
+
+---
+
+## /tailtest -- generate tests for any file
+
+`/tailtest` is the only explicit user-facing command tailtest adds to Claude for file targeting. It triggers test generation for any file you specify, bypassing the normal new-file/legacy-file distinction.
+
+## When to use it
+
+tailtest automatically processes files Claude writes in the current session. `/tailtest` is for everything else:
+
+- A file that existed before this session and you want covered right now
+- A file tailtest would normally skip (legacy file with no test)
+- Any file you want explicitly verified without waiting for the next edit
+
+## How to use it
+
+```
+/tailtest src/services/billing.py
+/tailtest app/Http/Controllers/OrderController.php
+/tailtest lib/pricing.ts
+/tailtest internal/handler.go
+```
+
+Pass the path relative to your project root. tailtest generates scenarios at your configured depth, writes the test file in the correct location for the language, runs it, and reports only failures.
+
+You can also use natural language variants: "tailtest billing.py" or "run tailtest on billing.py".
+
+## What "treat as new-file" means
+
+The command overrides the legacy-file distinction. Even if `billing.py` has existed for years and has hundreds of lines, `/tailtest billing.py` generates fresh scenarios as if it were just written.
+
+This is intentional. When you invoke `/tailtest`, you are explicitly requesting coverage. tailtest takes that as a signal to generate scenarios rather than stay silent.
+
+## What happens if a test file already exists
+
+If a test file already exists for the source file, `/tailtest` reads it first, then adds new scenarios or updates existing ones to reflect what changed. It does not replace the existing test file.
+
+## After running /tailtest
+
+Once a test file exists, subsequent edits to the source file within the same session find and update it automatically. `/tailtest` is a one-time bootstrap for a file; after that, tailtest's normal tracking takes over.

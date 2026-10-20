@@ -1,0 +1,34 @@
+{
+  "name": "tailtest",
+  "displayName": "tailtest -- AI software testing",
+  "version": "3.15.0",
+  "description": "Auto-generates and runs tests every time Claude edits a file. R1-R15 rule layer + adversarial mode.",
+  "author": {
+    "name": "AvanSaber Inc.",
+    "email": "support@avansaber.com",
+    "url": "https://avansaber.com"
+  },
+  "homepage": "https://tailtest.com",
+  "repository": "https://github.com/avansaber/tailtest",
+  "license": "MIT",
+  "keywords": [
+    "testing",
+    "tdd",
+    "adversarial",
+    "auto-test",
+    "claude-code",
+    "pytest",
+    "jest",
+    "hooks"
+  ],
+  "agents": ["./agents/"],
+  "hooks": "./hooks/hooks.json",
+  "userConfig": {
+    "depth": {
+      "type": "string",
+      "title": "Test depth",
+      "description": "simple | standard | thorough",
+      "default": "standard"
+    }
+  }
+}

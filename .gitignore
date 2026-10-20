@@ -1,0 +1,27 @@
+.DS_Store
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.tailtest/
+
+# Private -- never push to public repo
+ip/
+marketing/
+papers/
+settings/
+strategy/
+docs/strategy/
+docs/papers/
+.private/
+
+# Build output
+dist/
+build/
+site/
+
+# Temp and local scratch
+tmp/
+*.log
+2026-*.txt
+*-conversation-*.txt
